@@ -99,3 +99,14 @@
 .user {
   margin-bottom: 1.5%;
 }
+.reviews h2 {
+  font-size: 20px;
+  margin-top: 20px;
+  margin-right: 10px;
+  text-align: left;
+  display: inline-block;
+}
+
+.reviews ul {
+  padding-left: 10px;
+}
