@@ -39,11 +39,9 @@ $(function () {
       data: JSON.stringify(data),
       contentType: 'application/json',
       success: function (data) {
-        console.log(data);
         for (let i = 0; i < data.length; i++) {
           const place = data[i];
-          console.log(place);
-          const placeData = `<article>
+          const placeData = `<article id=${place.id}>
               <div class="title_box">
                 <h2>${place.name}</h2>
                 <div class="price_by_night">$${place.price_by_night}</div>
@@ -55,6 +53,13 @@ $(function () {
                 </div>
               <div class="description">
                 ${place.description}
+              </div>
+              <div class="reviews">
+                <div class="reviews-title">
+                  <h2>Reviews</h2>
+                  <span class="show-reviews">Show</span>
+                </div>
+                <ul></ul>
               </div>
             </article>`;
           $('.places').append(placeData);
@@ -68,5 +73,34 @@ $(function () {
   $('.filters > button').on('click', function () {
     $('.places').empty();
     ajaxPost({ amenities: Object.keys(amenityDict), states: Object.keys(stateDict), cities: Object.keys(cityDict) });
+  });
+
+  function fetchUser (userId, callback) {
+    $.getJSON(`http://0.0.0.0:5001/api/v1/users/${userId}`, function (data) {
+      callback(data);
+    });
+  }
+
+  $(document).on('click', 'span.show-reviews', function () {
+    if (!$(this).data('clicked')) {
+      const placeId = $(this).parents('article').attr('id');
+      $(this).text('Hide');
+      $.getJSON(`http://0.0.0.0:5001/api/v1/places/${placeId}/reviews`, function (data) {
+        for (const review of data) {
+          $(`#${placeId} .reviews ul`).append(`<li>
+            <h3>From <b id="${review.user_id}"></b> on ${review.created_at.split('T')[0]}</h3>
+              <p>${review.text}</p>
+          </li>`);
+          fetchUser(review.user_id, function (user) {
+            $(`b#${user.id}`).text(user.first_name);
+          });
+        }
+      });
+      $(this).data('clicked', true);
+    } else {
+      $(this).text('Show');
+      $(this).parents('.reviews').find('ul').empty();
+      $(this).data('clicked', false);
+    }
   });
 });
